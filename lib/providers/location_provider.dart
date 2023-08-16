@@ -12,6 +12,7 @@ class LocationProvider with ChangeNotifier {
   Future<void> _getLocation() async {
     Location location = Location();
 
+
     bool serviceEnabled;
     PermissionStatus permissionGranted;
     LocationData locationData;

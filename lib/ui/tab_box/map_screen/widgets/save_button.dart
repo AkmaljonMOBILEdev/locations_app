@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 class SaveButton extends StatelessWidget {
@@ -11,17 +12,13 @@ class SaveButton extends StatelessWidget {
     return ZoomTapAnimation(
       onTap: onTap,
       child: Container(
-          height: 42,
-          width: 80,
+          height: 34.w,
+          width: 34.h,
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               color: Colors.deepPurple),
           child: const Center(
-              child: Text(
-            "SAVE",
-            style: TextStyle(
-                color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
-          ))),
+              child: Icon(Icons.save, color: Colors.white,))),
     );
     // return Material(
     //   //shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

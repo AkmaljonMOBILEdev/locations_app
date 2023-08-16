@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:locations_app/ui/tab_box/list_screen/list_screen.dart';
 import 'package:provider/provider.dart';
 import '../../providers/tab_box_provider.dart';
+import '../../services/location_service.dart';
 import 'map_screen/map_screen.dart';
 
 class TabBox extends StatefulWidget {
@@ -16,16 +17,20 @@ class _TabBoxState extends State<TabBox> {
 
   @override
   void initState() {
+    getInit();
     screens.add(MapScreen());
     screens.add(ListScreen());
     super.initState();
   }
 
+  getInit()async{
+    await initLocationService(context);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        index: context.watch<TabBoxProvider>().index,
+        index: context.read<TabBoxProvider>().index,
         children: screens,
       ),
       bottomNavigationBar: BottomNavigationBar(

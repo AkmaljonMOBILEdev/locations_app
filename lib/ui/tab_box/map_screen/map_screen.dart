@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:locations_app/providers/call_adress_provider.dart';
+import 'package:locations_app/providers/marker_provider.dart';
 import 'package:locations_app/providers/saved_list_provider.dart';
 import 'package:locations_app/providers/tab_box_provider.dart';
 import 'package:locations_app/ui/tab_box/map_screen/widgets/address_kind_selector.dart';
 import 'package:locations_app/ui/tab_box/map_screen/widgets/address_lang_selector.dart';
-import 'package:locations_app/ui/tab_box/map_screen/widgets/map_types.dart';
+import 'package:locations_app/ui/tab_box/map_screen/widgets/cancel.dart';
+import 'package:locations_app/ui/tab_box/map_screen/widgets/map_types_row.dart';
 import 'package:locations_app/ui/tab_box/map_screen/widgets/save_button.dart';
+import 'package:locations_app/ui/tab_box/map_screen/widgets/start_button.dart';
+import 'package:locations_app/ui/tab_box/map_screen/widgets/timer.dart';
 import 'package:provider/provider.dart';
 import '../../../data/model/user_address.dart';
 import '../../../providers/location_provider.dart';
@@ -23,7 +28,6 @@ class _MapScreenState extends State<MapScreen> {
   late CameraPosition initialCameraPosition;
   late CameraPosition currentCameraPosition;
   bool onCameraMoveStarted = false;
-
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
@@ -31,7 +35,8 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     LocationProvider locationProvider =
         Provider.of<LocationProvider>(context, listen: false);
-
+    context.read<MarkerProvider>().getStart(locationProvider.latLong!);
+    
     initialCameraPosition = CameraPosition(
       target: locationProvider.latLong!,
       zoom: 13,
@@ -52,6 +57,10 @@ class _MapScreenState extends State<MapScreen> {
         child: Stack(
           children: [
             GoogleMap(
+              onLongPress: (latLng){
+                context.read<MarkerProvider>().finishIt(latLng);
+              },
+              markers: context.watch<MarkerProvider>().markers,
               onCameraMove: (CameraPosition cameraPosition) {
                 currentCameraPosition = cameraPosition;
               },
@@ -86,10 +95,29 @@ class _MapScreenState extends State<MapScreen> {
               },
               initialCameraPosition: initialCameraPosition,
             ),
-            const Positioned(
-                top: 2,
-                right: 2,
-                child: MapTypes()),
+            Positioned(
+                top: 8.h,
+                left: 50.w,
+                right: 50.w,
+                child: MapTypesRow()),
+            Positioned(
+                bottom: 50.h,
+                left: 10.w,
+                child: StartButton()),
+            Visibility(
+              visible: context.watch<MarkerProvider>().isGoing,
+              child: Positioned(
+                  bottom: 11.h,
+                  right: 100.w,
+                  child: CancelButton()),
+            ),
+            Visibility(
+              visible: context.watch<MarkerProvider>().isGoing,
+              child: const Align(
+                alignment: Alignment.bottomCenter,
+                child: MapTimer(),
+              ),
+            ),
             Align(
                 child: Icon(
               Icons.location_pin,
@@ -121,8 +149,9 @@ class _MapScreenState extends State<MapScreen> {
               alignment: Alignment.centerRight,
               child: AddressLangSelector(),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
+            Positioned(
+              bottom: 88.h,
+              left: 10.w,
               child: Visibility(
                 visible: context.watch<CallAddressProvider>().canSaveAddress(),
                 child: SaveButton(onTap: () {
@@ -143,15 +172,19 @@ class _MapScreenState extends State<MapScreen> {
           ],
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _followMe(cameraPosition: initialCameraPosition);
-        },
-        backgroundColor: Colors.deepPurple,
-        child: const Icon(
-          Icons.gps_fixed,
-          color: Colors.white,
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
+      floatingActionButton: SizedBox(
+        width: 34.w,
+        height: 34.h,
+        child: FloatingActionButton(
+          onPressed: () {
+            _followMe(cameraPosition: initialCameraPosition);
+          },
+          backgroundColor: Colors.deepPurple,
+          child: const Icon(
+            Icons.gps_fixed,
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -162,5 +195,4 @@ class _MapScreenState extends State<MapScreen> {
       CameraUpdate.newCameraPosition(cameraPosition),
     );
   }
-
 }
